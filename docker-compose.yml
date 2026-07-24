@@ -5,6 +5,8 @@ services:
     ports:
       - "8080:8080"
       - "8081:8081"
+    env_file:
+      - .env
     environment:
       # logging
       LOG_LEVEL: "info"
@@ -13,16 +15,30 @@ services:
       METRICS_ENABLED: "true"
       METRICS_PORT: "8081"
 
-      SERVER_NAME: "go-mcp-template"
-      TRANSPORT: "sse"
-      SSE_PORT: "8080"
+      SERVER_NAME: "lfpweather-mcp"
+
+      # upstream lfpweather-api. Point this at wherever the API runs; when
+      # running the API in this same compose network, use its service name.
+      LFPWEATHER_API_BASE_URL: "http://host.docker.internal:8080"
+      # LFPWEATHER_API_KEY: ""
+      LFPWEATHER_API_TIMEOUT: "10s"
+
+      # transport: streamablehttp (default, use this for remote hosting),
+      # sse (deprecated), or stdio. HTTP_PATH defaults to /mcp.
+      TRANSPORT: "streamablehttp"
+      HTTP_PORT: "8080"
+      HTTP_PATH: "/mcp"
+
+      # Bearer token clients must present as "Authorization: Bearer <token>".
+      # Leave unset to disable auth for local development.
+      # MCP_AUTH_TOKEN: "local-dev-token"
 
       LOCAL: "true"
 
       # tracing
       TRACING_ENABLED: "false"
       TRACING_SAMPLERATE: "1.0"
-      TRACING_SERVICE: "go-start"
+      TRACING_SERVICE: "lfpweather-mcp"
       TRACING_VERSION: "0.0.1"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://lgtm:4317"
 
