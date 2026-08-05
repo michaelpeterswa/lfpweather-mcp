@@ -26,6 +26,7 @@ automatically to fit the requested range.
 | `list_weather_fields` | Discovery: every queryable table, column, type, and the friendly aliases. |
 | `get_weather_latest` | Most recent reading for one or more metrics (current conditions). |
 | `get_bird_detections` | Species detection totals over a range, most-detected first (default 24h). |
+| `get_weather_records` | Record high and low of each metric over a period (`day`/`week`/`month`/`year`/`all`), each with the time it happened. Pass `at` (RFC3339 or `YYYY-MM-DD`) to browse a past completed period. |
 | `get_current_time` | Current US Pacific time — the timezone the station reports in. |
 
 All tools are read-only and non-destructive.

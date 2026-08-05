@@ -101,6 +101,22 @@ func (h *WeatherHandlerClient) GetWeatherLatestHandler(ctx context.Context, requ
 	return jsonResult(out)
 }
 
+// GetWeatherRecordsHandler backs get_weather_records: the record high and low
+// of the station's metrics over a period, each with the time it happened.
+func (h *WeatherHandlerClient) GetWeatherRecordsHandler(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	period := mcp.ParseString(request, "period", "")
+	if period == "" {
+		return mcp.NewToolResultError("period is required (day, week, month, year, or all)"), nil
+	}
+
+	resp, err := h.client.Records(ctx, period, mcp.ParseString(request, "at", ""))
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("could not get records", err), nil
+	}
+
+	return jsonResult(resp)
+}
+
 // speciesCount is one entry of get_bird_detections' result.
 type speciesCount struct {
 	CommonName string `json:"common_name"`
