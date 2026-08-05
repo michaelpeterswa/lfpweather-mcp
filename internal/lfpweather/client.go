@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -106,6 +107,29 @@ type FieldsResponse struct {
 	Aliases map[string]string      `json:"aliases"`
 }
 
+// RecordExtreme is a single extreme reading and the time it happened.
+type RecordExtreme struct {
+	Value float64   `json:"value"`
+	Time  time.Time `json:"time"`
+}
+
+// MetricRecord is the record high and (where meaningful) low of one metric.
+type MetricRecord struct {
+	Metric string         `json:"metric"`
+	High   *RecordExtreme `json:"high,omitempty"`
+	Low    *RecordExtreme `json:"low,omitempty"`
+}
+
+// RecordsResponse is the result of GET /api/v1/records/{period}. Complete is
+// true when the period has ended and its records can no longer change.
+type RecordsResponse struct {
+	Period   string         `json:"period"`
+	Start    time.Time      `json:"start"`
+	End      time.Time      `json:"end"`
+	Complete bool           `json:"complete"`
+	Records  []MetricRecord `json:"records"`
+}
+
 // Query runs a structured query against the upstream API.
 func (c *Client) Query(ctx context.Context, req QueryRequest) (*QueryResponse, error) {
 	body, err := json.Marshal(req)
@@ -134,6 +158,30 @@ func (c *Client) Fields(ctx context.Context) (*FieldsResponse, error) {
 	}
 
 	var out FieldsResponse
+	if err := c.do(httpReq, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// Records fetches the record high and low set for a period (day, week, month,
+// year, all). An optional at (RFC3339 or YYYY-MM-DD) selects a past period.
+func (c *Client) Records(ctx context.Context, period, at string) (*RecordsResponse, error) {
+	if period == "" {
+		return nil, fmt.Errorf("period is required")
+	}
+
+	path := "/api/v1/records/" + url.PathEscape(period)
+	if at != "" {
+		path += "?at=" + url.QueryEscape(at)
+	}
+
+	httpReq, err := c.newRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var out RecordsResponse
 	if err := c.do(httpReq, &out); err != nil {
 		return nil, err
 	}

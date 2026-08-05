@@ -230,6 +230,36 @@ func main() {
 		),
 		mcpserver.NewTool(
 			mcp.NewTool(
+				"get_weather_records",
+				mcp.WithTitleAnnotation("Record highs and lows over a period"),
+				mcp.WithDescription(
+					"Get the record high and low readings for the station over a "+
+						"period — today (day), this week, this month, this year, or all "+
+						"time — each with the exact time it happened. Answers \"hottest/"+
+						"coldest/windiest/wettest ever\", \"record high this month\", "+
+						"\"peak wind gust this year\". Pass at (RFC3339 or YYYY-MM-DD) to "+
+						"look back at a past completed period, e.g. period=month "+
+						"at=2025-07-15 for July 2025. Units: temperature °F, humidity %, "+
+						"pressure inHg, wind mph, 24h rain inches, rain rate counts/hr, "+
+						"solar W/m²; ERC and Burning Index are unitless fire-danger "+
+						"indices.",
+				),
+				mcp.WithString("period",
+					mcp.Description("Period to summarize: day (today), week (this week), month (this month), year (this year), or all (all time)."),
+					mcp.Enum("day", "week", "month", "year", "all"),
+					mcp.Required(),
+				),
+				mcp.WithString("at",
+					mcp.Description("Select a past period by a date inside it (RFC3339 timestamp or YYYY-MM-DD). Ignored for period=all. Omit for the current period."),
+				),
+				mcp.WithReadOnlyHintAnnotation(true),
+				mcp.WithDestructiveHintAnnotation(false),
+				mcp.WithOpenWorldHintAnnotation(true),
+			),
+			whc.GetWeatherRecordsHandler,
+		),
+		mcpserver.NewTool(
+			mcp.NewTool(
 				"get_current_time",
 				mcp.WithTitleAnnotation("Current Pacific time"),
 				mcp.WithDescription(
@@ -255,9 +285,10 @@ func main() {
 		"off-grid power system — a LiTime battery and a Renogy solar charge " +
 		"controller. Use get_weather_latest for current conditions, " +
 		"query_weather for history and trends over ranges up to multiple years " +
-		"(buckets auto-size to the range), list_weather_fields to discover the " +
-		"exact tables/columns available, get_bird_detections for birds, and " +
-		"get_current_time for the Pacific time the station reports in."
+		"(buckets auto-size to the range), get_weather_records for record highs " +
+		"and lows over a day/week/month/year/all time, list_weather_fields to " +
+		"discover the exact tables/columns available, get_bird_detections for " +
+		"birds, and get_current_time for the Pacific time the station reports in."
 
 	err = mcpserver.StartServer(ctx, c,
 		mcpserver.WithServerOptions(server.WithInstructions(instructions)),
