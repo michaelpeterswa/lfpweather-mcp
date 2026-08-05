@@ -244,6 +244,53 @@ func main() {
 			),
 			handlers.CurrentTimeHandler,
 		),
+		mcpserver.NewTool(
+			mcp.NewTool(
+				"get_et0",
+				mcp.WithTitleAnnotation("Reference evapotranspiration (ET0)"),
+				mcp.WithDescription(
+					"Get the year-to-date reference evapotranspiration (ET0, FAO-56 "+
+						"Penman-Monteith) for the station, in millimeters. Answers "+
+						"\"how much water have plants lost\", \"evapotranspiration this "+
+						"year\", and irrigation-demand questions.",
+				),
+				mcp.WithReadOnlyHintAnnotation(true),
+				mcp.WithDestructiveHintAnnotation(false),
+				mcp.WithOpenWorldHintAnnotation(true),
+			),
+			whc.GetET0Handler,
+		),
+		mcpserver.NewTool(
+			mcp.NewTool(
+				"get_gdd",
+				mcp.WithTitleAnnotation("Growing degree days (GDD)"),
+				mcp.WithDescription(
+					"Get the year-to-date growing degree days (GDD) for the station. "+
+						"Answers \"how much growing heat has accumulated\", \"degree days "+
+						"this season\", and crop or pest development questions.",
+				),
+				mcp.WithReadOnlyHintAnnotation(true),
+				mcp.WithDestructiveHintAnnotation(false),
+				mcp.WithOpenWorldHintAnnotation(true),
+			),
+			whc.GetGDDHandler,
+		),
+		mcpserver.NewTool(
+			mcp.NewTool(
+				"get_barometric_forecast",
+				mcp.WithTitleAnnotation("Barometric (Zambretti) forecast"),
+				mcp.WithDescription(
+					"Get the current short-term weather forecast derived from "+
+						"barometric pressure and its trend (the Zambretti forecaster). "+
+						"Answers \"what does the barometer say\", \"is fair or stormy "+
+						"weather coming\", and pressure-based forecast questions.",
+				),
+				mcp.WithReadOnlyHintAnnotation(true),
+				mcp.WithDestructiveHintAnnotation(false),
+				mcp.WithOpenWorldHintAnnotation(true),
+			),
+			whc.GetBarometricForecastHandler,
+		),
 	}
 
 	// Server-level instructions tell client/agent routers what this whole
@@ -251,13 +298,16 @@ func main() {
 	instructions := "Lake Forest Park (LFP) home weather and environment station. " +
 		"Serves live and historical readings: weather (temperature, humidity, " +
 		"barometric pressure, wind, rainfall, solar radiation, UV), air quality " +
-		"(AQI, CO2, NOx, TVOC), acoustic bird detections (BirdNET), and the " +
-		"off-grid power system — a LiTime battery and a Renogy solar charge " +
-		"controller. Use get_weather_latest for current conditions, " +
-		"query_weather for history and trends over ranges up to multiple years " +
-		"(buckets auto-size to the range), list_weather_fields to discover the " +
-		"exact tables/columns available, get_bird_detections for birds, and " +
-		"get_current_time for the Pacific time the station reports in."
+		"(AQI, CO2, NOx, TVOC), fire-danger indices (ERC, Burning Index, KBDI, " +
+		"GSI), acoustic bird detections (BirdNET), and the off-grid power system " +
+		"(Victron solar charger and battery monitor, LiTime battery). Use " +
+		"get_weather_latest for current conditions, query_weather for history " +
+		"and trends over ranges up to multiple years (buckets auto-size to the " +
+		"range), list_weather_fields to discover the exact tables/columns " +
+		"available, get_bird_detections for birds, get_et0 and get_gdd for " +
+		"reference evapotranspiration and growing degree days, " +
+		"get_barometric_forecast for the pressure-based (Zambretti) forecast, " +
+		"and get_current_time for the Pacific time the station reports in."
 
 	err = mcpserver.StartServer(ctx, c,
 		mcpserver.WithServerOptions(server.WithInstructions(instructions)),

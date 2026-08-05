@@ -140,6 +140,21 @@ func (c *Client) Fields(ctx context.Context) (*FieldsResponse, error) {
 	return &out, nil
 }
 
+// Meteo fetches a parameterless computed endpoint (/api/v1/et0, /gdd,
+// /zambretti) and returns its raw JSON body to pass straight to the model.
+func (c *Client) Meteo(ctx context.Context, path string) (json.RawMessage, error) {
+	httpReq, err := c.newRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var out json.RawMessage
+	if err := c.do(httpReq, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *Client) newRequest(ctx context.Context, method, path string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, body)
 	if err != nil {

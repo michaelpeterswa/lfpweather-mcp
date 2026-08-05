@@ -139,6 +139,34 @@ func (h *WeatherHandlerClient) GetBirdDetectionsHandler(ctx context.Context, req
 	return jsonResult(out)
 }
 
+// GetET0Handler backs get_et0: year-to-date reference evapotranspiration.
+func (h *WeatherHandlerClient) GetET0Handler(ctx context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	resp, err := h.client.Meteo(ctx, "/api/v1/et0")
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("could not get evapotranspiration", err), nil
+	}
+	return jsonResult(resp)
+}
+
+// GetGDDHandler backs get_gdd: year-to-date growing degree days.
+func (h *WeatherHandlerClient) GetGDDHandler(ctx context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	resp, err := h.client.Meteo(ctx, "/api/v1/gdd")
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("could not get growing degree days", err), nil
+	}
+	return jsonResult(resp)
+}
+
+// GetBarometricForecastHandler backs get_barometric_forecast: the current
+// Zambretti forecast derived from barometric pressure and its trend.
+func (h *WeatherHandlerClient) GetBarometricForecastHandler(ctx context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	resp, err := h.client.Meteo(ctx, "/api/v1/zambretti")
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("could not get barometric forecast", err), nil
+	}
+	return jsonResult(resp)
+}
+
 func jsonResult(v any) (*mcp.CallToolResult, error) {
 	b, err := json.Marshal(v)
 	if err != nil {
