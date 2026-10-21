@@ -135,8 +135,10 @@ func main() {
 						"(renogychargecontroller.*). Use it for history, trends, "+
 						"averages, minima/maxima, and \"over the last week/month/year\" "+
 						"questions. Pass a friendly name, or a table.column reference "+
-						"(call list_weather_fields to discover columns). Buckets are "+
-						"chosen automatically to fit the range unless you set one.",
+						"(call list_weather_fields to discover columns). Unless you set a "+
+						"bucket, it is sized to return about 50 points, enough for "+
+						"trends and extremes; set a finer bucket only when the "+
+						"question needs that detail.",
 				),
 				mcp.WithString("metric",
 					mcp.Description("Metric to query: a friendly alias (temperature, humidity, pressure, wind_speed, wind_gust, rain_rate, solar_radiation, uv_index, aqi, co2, nox_index, tvoc_index), the count metric 'birdnet', or a table.column reference such as renogychargecontroller.battery_voltage or litime.soc."),
@@ -153,7 +155,7 @@ func main() {
 					mcp.Description("Absolute end (RFC3339). Optional; defaults to now when start is given."),
 				),
 				mcp.WithString("bucket",
-					mcp.Description("Override the time bucket. Leave unset to auto-size it to the range."),
+					mcp.Description("Override the time bucket. Leave unset to get about 50 points across the range."),
 					mcp.Enum("5m", "15m", "30m", "1h", "3h", "6h", "12h", "1d", "1w"),
 				),
 				mcp.WithArray("aggregations",

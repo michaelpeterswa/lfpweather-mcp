@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/michaelpeterswa/lfpweather-mcp/internal/lfpweather"
@@ -38,6 +39,17 @@ func (h *WeatherHandlerClient) QueryWeatherHandler(ctx context.Context, request 
 	}
 	if end := mcp.ParseString(request, "end", ""); end != "" {
 		req.End = &end
+	}
+	// Count metrics (birdnet) bucket by the API's own rules; size only gauges.
+	if req.Bucket == "" && metric != "birdnet" {
+		start, end := "", ""
+		if req.Start != nil {
+			start = *req.Start
+		}
+		if req.End != nil {
+			end = *req.End
+		}
+		req.Bucket = defaultBucket(req.Range, start, end, time.Now())
 	}
 
 	resp, err := h.client.Query(ctx, req)
